@@ -7,6 +7,21 @@ const Registry = require('./Registry');
 const Dispatcher = require('./Dispatcher');
 require('./Extensions');
 
+const STATE_DIR = process.env.XIAO_STATE_DIR
+	? path.resolve(process.env.XIAO_STATE_DIR)
+	: path.join(__dirname, '..');
+
+function resolveStatePath(fileName) {
+	return path.join(STATE_DIR, fileName);
+}
+
+function writeJsonFile(filePath, data) {
+	fs.mkdirSync(path.dirname(filePath), { recursive: true });
+	const buf = Buffer.from(`${JSON.stringify(data, null, '\t')}\n`);
+	fs.writeFileSync(filePath, buf, { encoding: 'utf8' });
+	return data;
+}
+
 module.exports = class CommandClient extends Client {
 	constructor(options) {
 		super(options);
@@ -157,7 +172,11 @@ module.exports = class CommandClient extends Client {
 	}
 
 	importBlacklist() {
-		const read = fs.readFileSync(path.join(__dirname, '..', 'blacklist.json'), { encoding: 'utf8' });
+		const filePath = resolveStatePath('blacklist.json');
+		if (!fs.existsSync(filePath)) {
+			return writeJsonFile(filePath, { guild: [], user: [] });
+		}
+		const read = fs.readFileSync(filePath, { encoding: 'utf8' });
 		const file = JSON.parse(read);
 		if (typeof file !== 'object' || Array.isArray(file)) return null;
 		if (!file.guild || !file.user) return null;
@@ -191,12 +210,17 @@ module.exports = class CommandClient extends Client {
 		}
 		text += '\n	]\n}\n';
 		const buf = Buffer.from(text);
-		fs.writeFileSync(path.join(__dirname, '..', 'blacklist.json'), buf, { encoding: 'utf8' });
+		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.writeFileSync(resolveStatePath('blacklist.json'), buf, { encoding: 'utf8' });
 		return buf;
 	}
 
 	importCommandLeaderboard(add = false) {
-		const read = fs.readFileSync(path.join(__dirname, '..', 'command-leaderboard.json'), {
+		const filePath = resolveStatePath('command-leaderboard.json');
+		if (!fs.existsSync(filePath)) {
+			return writeJsonFile(filePath, {});
+		}
+		const read = fs.readFileSync(filePath, {
 			encoding: 'utf8'
 		});
 		const file = JSON.parse(read);
@@ -221,14 +245,19 @@ module.exports = class CommandClient extends Client {
 		text = text.slice(0, -1);
 		text += '\n}\n';
 		const buf = Buffer.from(text);
-		fs.writeFileSync(path.join(__dirname, '..', 'command-leaderboard.json'), buf, {
+		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.writeFileSync(resolveStatePath('command-leaderboard.json'), buf, {
 			encoding: 'utf8'
 		});
 		return buf;
 	}
 
 	importLastRun() {
-		const read = fs.readFileSync(path.join(__dirname, '..', 'command-last-run.json'), {
+		const filePath = resolveStatePath('command-last-run.json');
+		if (!fs.existsSync(filePath)) {
+			return writeJsonFile(filePath, {});
+		}
+		const read = fs.readFileSync(filePath, {
 			encoding: 'utf8'
 		});
 		const file = JSON.parse(read);
@@ -254,7 +283,8 @@ module.exports = class CommandClient extends Client {
 		text = text.slice(0, -1);
 		text += '\n}\n';
 		const buf = Buffer.from(text);
-		fs.writeFileSync(path.join(__dirname, '..', 'command-last-run.json'), buf, {
+		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.writeFileSync(resolveStatePath('command-last-run.json'), buf, {
 			encoding: 'utf8'
 		});
 		return buf;

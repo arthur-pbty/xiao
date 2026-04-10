@@ -8,6 +8,14 @@ const path = require('path');
 const { checkFileExists } = require('../util/Util');
 const rounds = ['jeopardy_round', 'double_jeopardy_round', 'final_jeopardy_round'];
 
+const STATE_DIR = process.env.XIAO_STATE_DIR
+	? path.resolve(process.env.XIAO_STATE_DIR)
+	: path.join(__dirname, '..');
+
+function resolveStatePath(fileName) {
+	return path.join(STATE_DIR, fileName);
+}
+
 module.exports = class JeopardyScrape {
 	constructor(client) {
 		Object.defineProperty(this, 'client', { value: client });
@@ -70,17 +78,17 @@ module.exports = class JeopardyScrape {
 	}
 
 	async importData() {
-		const read = await fs.promises.readFile(path.join(__dirname, '..', 'jeopardy.json'), { encoding: 'utf8' });
+		const read = await fs.promises.readFile(resolveStatePath('jeopardy.json'), { encoding: 'utf8' });
 		const { seasons, gameIDs } = JSON.parse(read);
-		this.gameIDs = gameIDs;
-		this.seasons = seasons;
+		this.gameIDs = Array.isArray(gameIDs) ? gameIDs : [];
+		this.seasons = Array.isArray(seasons) ? seasons : [];
 		this.clues = await this.importClues();
 		this.imported = true;
 		return this;
 	}
 
 	importClues() {
-		const pipeline = fs.createReadStream(path.join(__dirname, '..', 'jeopardy.json'), { encoding: 'utf8' })
+		const pipeline = fs.createReadStream(resolveStatePath('jeopardy.json'), { encoding: 'utf8' })
 			.pipe(parser())
 			.pipe(pick({ filter: 'clues' }))
 			.pipe(streamArray());
@@ -96,18 +104,34 @@ module.exports = class JeopardyScrape {
 			gameIDs: this.gameIDs,
 			seasons: this.seasons
 		}));
-		fs.writeFileSync(path.join(__dirname, '..', 'jeopardy.json'), buf, { encoding: 'utf8' });
+		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.writeFileSync(resolveStatePath('jeopardy.json'), buf, { encoding: 'utf8' });
 		return buf;
 	}
 
 	async checkForUpdates() {
 		if (!this.imported) {
-			const fileExists = await checkFileExists(path.join(__dirname, '..', 'jeopardy.json'));
+			const fileExists = await checkFileExists(resolveStatePath('jeopardy.json'));
 			if (fileExists) {
 				this.client.logger.info('[JEOPARDY] Importing from file...');
 				await this.importData();
 				this.client.logger.info('[JEOPARDY] Import complete!');
+			} else {
+				this.client.logger.warn('[JEOPARDY] No jeopardy.json found. Skipping update for now.');
+				this.clues = [];
+				this.gameIDs = [];
+				this.seasons = [];
+				this.imported = true;
+				this.exportData();
+				return 0;
 			}
+		}
+		if (!Array.isArray(this.clues)) this.clues = [];
+		if (!Array.isArray(this.gameIDs)) this.gameIDs = [];
+		if (!Array.isArray(this.seasons)) this.seasons = [];
+		if (!this.seasons.length) {
+			this.client.logger.warn('[JEOPARDY] No seasons loaded. Skipping update.');
+			return 0;
 		}
 		const cluesBefore = this.clues.length;
 		const latestSeason = this.seasons[this.seasons.length - 1];

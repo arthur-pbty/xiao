@@ -1,0 +1,38 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: xiao-redis
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASS:-change_me_redis_password}
+    volumes:
+      - redis-data:/data
+
+  xiao:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xiao-bot
+    restart: unless-stopped
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PASS: ${REDIS_PASS:-change_me_redis_password}
+      TZ: ${TZ:-UTC}
+      XIAO_STATE_DIR: ${XIAO_STATE_DIR:-/data}
+    volumes:
+      - xiao-tmp:/app/tmp
+      - xiao-state:/data
+      - ./.env:/app/.env:ro
+
+volumes:
+  redis-data:
+  xiao-tmp:
+  xiao-state:
