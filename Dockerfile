@@ -3,7 +3,8 @@ FROM node:24-bookworm
 WORKDIR /app
 
 # System dependencies used by native modules and image/audio commands.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN dpkg --add-architecture i386 \
+ && apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     ffmpeg \
     git \
@@ -17,6 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
     g++ \
     python3 \
+    wine \
+    wine32 \
+    xauth \
+    xvfb \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
