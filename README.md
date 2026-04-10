@@ -27,7 +27,7 @@ I don't really care, but please give credit in some form if you do so. You'll al
 
 > Can I host Xiao myself?
 
-If you want, good luck. Setting her up is a pretty difficult task.
+Yes. It is much easier to deploy now, especially with Docker Compose.
 
 > Do I need every API key, emoji ID, etc.?
 
@@ -43,7 +43,32 @@ Only if you want to use the DECTalk command.
 
 ## Installing
 
-### Filling Out `.env`
+There are now two ways to run Xiao:
+1. **Quick deploy (recommended):** Docker Compose.
+2. **Manual deploy:** direct Linux setup.
+
+### Quick Deploy (Docker Compose)
+
+1. Install [Docker Engine](https://docs.docker.com/engine/install/) and the Docker Compose plugin.
+2. Clone this repository and move into it:
+   * `git clone https://github.com/xiaobotdev/xiao.git`
+   * `cd xiao`
+3. Create your env file from the template:
+   * `cp .env.example .env`
+4. Edit `.env` and set at least:
+   * `XIAO_TOKEN`
+   * `OWNERS`
+   * `REDIS_PASS`
+   * Keep `REDIS_HOST=redis` when using Docker Compose.
+5. Build and start the bot:
+   * `docker compose up -d --build`
+6. Check logs:
+   * `docker compose logs -f xiao`
+7. Stop the stack when needed:
+   * `docker compose down`
+
+### Environment Variables (`.env`)
+
 #### Discord-related info
 * `XIAO_TOKEN` is the token of your bot. You can get this at the [Discord Developer Portal](https://discord.com/developers/applications).
 * `OWNERS` is the Discord user IDs of users you want to have access to sensitive commands. Be careful putting anyone but yourself here.
@@ -89,7 +114,7 @@ Only if you want to use the DECTalk command.
 1. Run `npm i -g @dotenvx/dotenvx`.
 2. Run `dotenvx encrypt`.
 
-### Run (Linux)
+### Run without Docker (Linux)
 
 > Install instructions below are for Linux. She should work on Windows, but I can't guarantee anything.
 
