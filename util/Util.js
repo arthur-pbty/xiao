@@ -2,6 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, PermissionFlagsBits, ButtonStyle, Compo
 const crypto = require('crypto');
 const request = require('node-superfetch');
 const fs = require('fs');
+const path = require('path');
 let parseDomain;
 let ParseResultType;
 import('parse-domain').then(loadedModule => {
@@ -201,6 +202,16 @@ module.exports = class Util {
 
 	static checkFileExists(filepath) {
 		return new Promise(res => fs.access(filepath, fs.constants.F_OK, error => res(!error)));
+	}
+
+	static getStateDir() {
+		return process.env.XIAO_STATE_DIR
+			? path.resolve(process.env.XIAO_STATE_DIR)
+			: path.join(__dirname, '..');
+	}
+
+	static resolveStatePath(fileName) {
+		return path.join(Util.getStateDir(), fileName);
 	}
 
 	static stripInvites(str, { guild = true, bot = true, text = '[redacted invite]' } = {}) {

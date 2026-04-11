@@ -27,7 +27,7 @@ I don't really care, but please give credit in some form if you do so. You'll al
 
 > Can I host Xiao myself?
 
-Yes. It is much easier to deploy now, especially with Docker Compose.
+If you want. Docker Compose makes it simple, or you can do it the old-fashioned way.
 
 > Do I need every API key, emoji ID, etc.?
 
@@ -43,8 +43,8 @@ Only if you want to use the DECTalk command.
 
 ## Installing
 
-There are now two ways to run Xiao:
-1. **Quick deploy (recommended):** Docker Compose.
+There are two ways to run Xiao:
+1. **Quick deploy:** Docker Compose.
 2. **Manual deploy:** direct Linux setup.
 
 ### Quick Deploy (Docker Compose)
@@ -114,7 +114,7 @@ There are now two ways to run Xiao:
 1. Run `npm i -g @dotenvx/dotenvx`.
 2. Run `dotenvx encrypt`.
 
-### Run without Docker (Linux)
+### Manual Deploy (Linux)
 
 > Install instructions below are for Linux. She should work on Windows, but I can't guarantee anything.
 

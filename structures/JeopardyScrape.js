@@ -4,17 +4,8 @@ const fs = require('fs');
 const { parser } = require('stream-json');
 const { pick } = require('stream-json/filters/Pick');
 const { streamArray } = require('stream-json/streamers/StreamArray');
-const path = require('path');
-const { checkFileExists } = require('../util/Util');
+const { checkFileExists, getStateDir, resolveStatePath } = require('../util/Util');
 const rounds = ['jeopardy_round', 'double_jeopardy_round', 'final_jeopardy_round'];
-
-const STATE_DIR = process.env.XIAO_STATE_DIR
-	? path.resolve(process.env.XIAO_STATE_DIR)
-	: path.join(__dirname, '..');
-
-function resolveStatePath(fileName) {
-	return path.join(STATE_DIR, fileName);
-}
 
 module.exports = class JeopardyScrape {
 	constructor(client) {
@@ -104,7 +95,7 @@ module.exports = class JeopardyScrape {
 			gameIDs: this.gameIDs,
 			seasons: this.seasons
 		}));
-		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.mkdirSync(getStateDir(), { recursive: true });
 		fs.writeFileSync(resolveStatePath('jeopardy.json'), buf, { encoding: 'utf8' });
 		return buf;
 	}

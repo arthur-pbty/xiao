@@ -7,13 +7,7 @@ const Registry = require('./Registry');
 const Dispatcher = require('./Dispatcher');
 require('./Extensions');
 
-const STATE_DIR = process.env.XIAO_STATE_DIR
-	? path.resolve(process.env.XIAO_STATE_DIR)
-	: path.join(__dirname, '..');
-
-function resolveStatePath(fileName) {
-	return path.join(STATE_DIR, fileName);
-}
+const { getStateDir, resolveStatePath } = require('../util/Util');
 
 function writeJsonFile(filePath, data) {
 	fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -210,7 +204,7 @@ module.exports = class CommandClient extends Client {
 		}
 		text += '\n	]\n}\n';
 		const buf = Buffer.from(text);
-		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.mkdirSync(getStateDir(), { recursive: true });
 		fs.writeFileSync(resolveStatePath('blacklist.json'), buf, { encoding: 'utf8' });
 		return buf;
 	}
@@ -245,7 +239,7 @@ module.exports = class CommandClient extends Client {
 		text = text.slice(0, -1);
 		text += '\n}\n';
 		const buf = Buffer.from(text);
-		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.mkdirSync(getStateDir(), { recursive: true });
 		fs.writeFileSync(resolveStatePath('command-leaderboard.json'), buf, {
 			encoding: 'utf8'
 		});
@@ -283,7 +277,7 @@ module.exports = class CommandClient extends Client {
 		text = text.slice(0, -1);
 		text += '\n}\n';
 		const buf = Buffer.from(text);
-		fs.mkdirSync(STATE_DIR, { recursive: true });
+		fs.mkdirSync(getStateDir(), { recursive: true });
 		fs.writeFileSync(resolveStatePath('command-last-run.json'), buf, {
 			encoding: 'utf8'
 		});
